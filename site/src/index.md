@@ -147,6 +147,28 @@ display(Plot.plot({
 </div>
 </div>
 
+## Rent or own?
+
+Token revenue per GPU hour minus what that GPU hour costs if you **rent** it, or if you **own** it (electricity plus the server's price spread over ${data.assumptions.hw_life_years} years at ${pct(data.assumptions.hw_utilization)} utilization).
+
+```js
+const ownRows = GPUS.flatMap((g) => d3.sort(latest.filter((d) => d.gpu === g), (d) => -d.token_rev));
+const signed = (v) => (v > 0 ? "+" : "") + usd(v);
+display(html`<table class="own-table">
+  <thead><tr><th>GPU</th><th>Model</th><th class="num">Token revenue</th><th class="num">− Rent</th><th class="num">− Own</th></tr></thead>
+  <tbody>${ownRows.map((d) => html`<tr>
+    <td>${d.gpu}</td><td>${d.model.replace(/-/g, " ").replace("gpt oss 120b", "gpt-oss-120b")}</td>
+    <td class="num">${usd(d.token_rev)}</td>
+    <td class="num ${d.inference_spread >= 0 ? "c-seller" : "c-loss"}">${signed(d.inference_spread)}</td>
+    <td class="num ${d.own_spread >= 0 ? "c-seller" : "c-loss"}"><b>${signed(d.own_spread)}</b></td>
+  </tr>`)}</tbody>
+</table>`);
+```
+
+<p class="small muted">${GPUS.map((g) => { const r = latest.find((d) => d.gpu === g); return `${g}: rent ${usd(r.rental)}, own ${usd(r.own_cost)} per GPU hour (${usd(data.gpus[g].server_capex_usd, 0)} per 8-GPU server, estimated)`; }).join(" · ")}.</p>
+
+Companies creating tradeable marketplaces for compute can address the risks that come with owning these chips, such as idle time and falling resale value. These risks are what stop companies from owning their GPUs. Ornn's futures and resale-value protection products are built to cover this. Ultimately, bridging the gap between renting and owning is the risk premium: if you can hedge that risk, owning becomes viable for many more companies.
+
 ## What would it take?
 
 The token seller's result hinges on throughput: how many output tokens a GPU produces per second. Pick a model and move the sliders. They start at today's values for the ${gpu} you chose above.

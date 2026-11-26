@@ -21,6 +21,8 @@ The chain has three layers, each in dollars per GPU hour, calculated per month f
 | **Blended token price** | output price + (input tokens per output token × input price) |
 | **GPU owner's spread** (compute spread) | rental − electricity${data.assumptions.include_hardware ? " − hardware" : ""} |
 | **Token seller's spread** (inference spread) | token revenue − rental |
+| **Cost to own** | electricity + server price ÷ 8 GPUs ÷ (life in years × 8,760 hours × utilization) |
+| **Owning and selling tokens** | token revenue − cost to own |
 
 ## Assumptions in use
 
@@ -34,7 +36,9 @@ display(Inputs.table([
   {assumption: "Electricity price", value: `EIA retail, ${a.power_state} ${a.power_sector === "IND" ? "industrial" : "commercial"}: ${usd(data.power?.usd_per_kwh, 4)}/kWh (${data.power?.month})`},
   {assumption: "Input tokens billed per output token", value: a.input_per_output},
   {assumption: "Token load factor (achieved ÷ benchmark throughput)", value: a.token_load_factor},
-  {assumption: "Benchmark speed per user", value: `${a.target_interactivity} output tok/s`}
+  {assumption: "Benchmark speed per user", value: `${a.target_interactivity} output tok/s`},
+  {assumption: "8-GPU server price, H100 / B200 (estimates)", value: `${usd(data.gpus.H100?.server_capex_usd, 0)} / ${usd(data.gpus.B200?.server_capex_usd, 0)}`},
+  {assumption: "Server life and utilization (cost to own)", value: `${a.hw_life_years} years at ${a.hw_utilization * 100}%`}
 ], {select: false, header: {assumption: "Assumption", value: "Value"}, layout: "auto"}));
 ```
 

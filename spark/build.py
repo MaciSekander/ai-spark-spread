@@ -92,11 +92,17 @@ def throughput_by_month(tput, gpu, series, months):
     return pd.Series(m["output_tok_s_per_gpu"].values, index=months)
 
 
-def hw_cost_per_gpu_hr(gpu):
+def owned_hw_per_gpu_hr(gpu):
+    """Server price spread over its life, per GPU per hour of use."""
     capex = C.GPU_SPECS[gpu]["server_capex_usd"]
-    if not C.INCLUDE_HARDWARE or not capex:
-        return 0.0
+    if not capex:
+        return np.nan
     return capex / C.GPU_SPECS[gpu]["gpus_per_server"] / (C.HW_LIFE_YEARS * 8760 * C.HW_UTILIZATION)
+
+
+def hw_cost_per_gpu_hr(gpu):
+    hw = owned_hw_per_gpu_hr(gpu)
+    return hw if C.INCLUDE_HARDWARE and np.isfinite(hw) else 0.0
 
 
 def build_panel():
@@ -118,11 +124,13 @@ def build_panel():
                                "tok_s_per_gpu": tps})
             df["token_rev"] = df.tok_s_per_gpu * C.TOKEN_LOAD_FACTOR * 3600 / 1e6 * df.token_price_blended
             df["hardware"] = hw_cost_per_gpu_hr(g)
+            df["own_cost"] = df.power + owned_hw_per_gpu_hr(g)   # electricity + hardware when you own the GPU
             df["gpu"], df["model"] = g, s
             rows.append(df.rename_axis("month").reset_index())
     panel = pd.concat(rows, ignore_index=True).dropna(subset=["rental"])
     panel["compute_spread"] = panel.rental - panel.power - panel.hardware
     panel["inference_spread"] = panel.token_rev - panel.rental
+    panel["own_spread"] = panel.token_rev - panel.own_cost   # selling tokens on a GPU you own
     panel["power_pct_of_rental"] = panel.power / panel.rental
     return panel, dict(power_latest=power_latest, rental_obs=ro, token_obs=to, tput=tput)
 
@@ -204,8 +212,10 @@ def site_payload(panel, parts):
             "pue_scenarios": C.PUE_SCENARIOS, "input_per_output": C.INPUT_PER_OUTPUT,
             "token_load_factor": C.TOKEN_LOAD_FACTOR, "target_interactivity": C.TARGET_INTERACTIVITY,
             "power_state": C.POWER_STATE, "power_sector": C.POWER_SECTOR, "include_hardware": C.INCLUDE_HARDWARE,
+            "hw_life_years": C.HW_LIFE_YEARS, "hw_utilization": C.HW_UTILIZATION,
         },
-        "gpus": {g: {"gpu_kw": s["gpu_kw"], "server_kw": s["server_kw"], "kw_per_gpu": C.kw_per_gpu(g)}
+        "gpus": {g: {"gpu_kw": s["gpu_kw"], "server_kw": s["server_kw"], "kw_per_gpu": C.kw_per_gpu(g),
+                     "server_capex_usd": s["server_capex_usd"], "hw_per_gpu_hr": owned_hw_per_gpu_hr(g)}
                  for g, s in C.GPU_SPECS.items()},
         "models": C.MODEL_NAMES,
         "power": parts["power_latest"],

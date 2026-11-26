@@ -32,8 +32,9 @@ def months():
 # ---- Hardware and power -------------------------------------------------------------------------
 GPU_SPECS = {
     # gpu_kw: chip spec power. server_kw: 8-GPU server max power. capex: per 8-GPU server (v2).
-    "H100": {"gpu_kw": 0.700, "server_kw": 10.2, "gpus_per_server": 8, "server_capex_usd": None},
-    "B200": {"gpu_kw": 1.000, "server_kw": 14.3, "gpus_per_server": 8, "server_capex_usd": None},
+    # capex: estimated purchase price of an 8-GPU server, used for the site's "rent or own" table.
+    "H100": {"gpu_kw": 0.700, "server_kw": 10.2, "gpus_per_server": 8, "server_capex_usd": 250_000},
+    "B200": {"gpu_kw": 1.000, "server_kw": 14.3, "gpus_per_server": 8, "server_capex_usd": 372_000},
 }
 GPUS = list(GPU_SPECS)
 LOAD_FACTOR = 0.80
@@ -43,7 +44,7 @@ POWER_STATE, POWER_SECTOR = "US", "IND"
 EIA_STATES = ["US", "VA", "TX", "GA", "AZ", "OR"]
 EIA_SECTORS = ["IND", "COM"]
 
-INCLUDE_HARDWARE = False
+INCLUDE_HARDWARE = False   # subtract hardware from the owner's spread; the "own" cost always includes it
 HW_LIFE_YEARS = 5
 HW_UTILIZATION = 0.70
 
