@@ -15,6 +15,8 @@ SITE_DATA = ROOT / "site" / "src" / "data"
 VAST_HISTORY = RAW / "vast_snapshots.csv"
 OPENROUTER_HISTORY = RAW / "openrouter_price_snapshots.csv"
 EIA_HISTORY = RAW / "eia_retail_prices.csv"
+OPENROUTER_LISTED_HISTORY = RAW / "openrouter_listed_snapshots.csv"   # OpenRouter's headline price, same as the archive
+LIST_PRICE_HISTORY = RAW / "gpu_list_price_snapshots.csv"            # Lambda / RunPod list prices, same as the archive
 THROUGHPUT_DERIVED = PROC / "inferencex_throughput.csv"
 
 load_dotenv(ROOT / ".env")   # locally; in GitHub Actions the keys come from repository secrets

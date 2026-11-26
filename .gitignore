@@ -12,6 +12,8 @@ data/raw/*
 !data/raw/openrouter_price_snapshots.csv
 !data/raw/eia_retail_prices.csv
 !data/raw/eia_retail_prices.refreshed
+!data/raw/openrouter_listed_snapshots.csv
+!data/raw/gpu_list_price_snapshots.csv
 
 # Website build output and caches
 site/node_modules/

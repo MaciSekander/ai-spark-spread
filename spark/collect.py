@@ -11,6 +11,7 @@ import time
 import pandas as pd
 
 from . import config as C
+from . import history as H
 from .common import HTTP, append_snapshot, get_json, redact
 
 
@@ -52,7 +53,32 @@ def collect_openrouter():
     if not rows:
         raise RuntimeError("OpenRouter returned no endpoints for our models")
     allrows = append_snapshot(pd.DataFrame(rows), C.OPENROUTER_HISTORY)
-    return f"{len(rows)} provider prices today, {allrows.date.nunique()} days on file"
+    # Headline price too, defined exactly as in the Wayback archive, so today continues the historical line
+    listed = pd.DataFrame([{**r, "source": "openrouter listed", "source_url": "https://openrouter.ai/api/v1/models"}
+                           for r in H.listed_prices(models, C.TODAY)])
+    if len(listed):
+        append_snapshot(listed, C.OPENROUTER_LISTED_HISTORY, key_cols=["date", "series"])
+    return f"{len(rows)} provider prices and {len(listed)} headline prices today, {allrows.date.nunique()} days on file"
+
+
+def collect_list_prices():
+    """Lambda and RunPod list prices, parsed exactly like the archived pages."""
+    rows, failed = [], []
+    for provider, url in H.LIVE_RENTAL_PAGES:
+        try:
+            r = HTTP.get(f"https://{url}", timeout=60)
+            r.raise_for_status()
+            found = H.list_prices(provider, r.text, C.TODAY, f"https://{url}")
+            if not found:
+                raise RuntimeError("no prices found on the page (layout may have changed)")
+            rows += found
+        except Exception as e:   # noqa: BLE001
+            failed.append(provider)
+            print(f"    {provider} list prices failed: {redact(e)}")
+    if not rows:
+        raise RuntimeError("no list prices collected")
+    append_snapshot(pd.DataFrame(rows), C.LIST_PRICE_HISTORY, key_cols=["date", "provider", "variant"])
+    return f"{len(rows)} list prices today" + (f" ({', '.join(failed)} failed)" if failed else "")
 
 
 EIA_REFRESH_DAYS = 7   # EIA publishes monthly; no need to hit its slow API every day
@@ -110,7 +136,7 @@ def collect_eia(force=False):
 def main():
     ok = 0
     force_eia = "--eia" in sys.argv
-    for name, fn in [("Vast.ai", collect_vast), ("OpenRouter", collect_openrouter),
+    for name, fn in [("Vast.ai", collect_vast), ("OpenRouter", collect_openrouter), ("List prices", collect_list_prices),
                      ("EIA", lambda: collect_eia(force=force_eia))]:
         try:
             print(f"{name}: {fn()}")

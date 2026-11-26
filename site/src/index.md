@@ -232,14 +232,17 @@ display(Plot.plot({
 
 ## Price history since 2023
 
-Daily collection began on ${data.tracking_since}. Earlier months come from archived copies of public price pages on the [Wayback Machine](https://web.archive.org): Lambda and RunPod GPU prices, and OpenRouter's listed token prices. Every archived price links to its snapshot in the [archived price files](https://github.com/MaciSekander/ai-spark-spread/tree/main/data/processed).
+Daily collection began on ${data.tracking_since}. Earlier months come from archived copies of public price pages on the [Wayback Machine](https://web.archive.org), read up to four times a month: Lambda and RunPod list prices, and OpenRouter's headline token price. The same pages are still read every day, so the historical lines continue to today on the same definition. Every price links to its source in the [price files](https://github.com/MaciSekander/ai-spark-spread/tree/main/data).
 
 ```js
 const toDate = (m) => new Date(m + "-01");
 const rentalHist = data.rental_history.map((d) => ({...d, date: toDate(d.month)}));
 const tokenHist = data.token_history.map((d) => ({...d, date: toDate(d.month)}));
 const powerHist = data.panel.filter((d) => d.model === MODELS[0]).map((d) => ({...d, date: toDate(d.month)}));
-const sourceName = {list: "Lambda / RunPod list price", vast: "Vast.ai marketplace median"};
+const listRows = rentalHist.filter((d) => d.list != null);
+const vastRows = rentalHist.filter((d) => d.vast != null);
+const listedRows = tokenHist.filter((d) => d.listed != null);
+const liveRows = tokenHist.filter((d) => d.median != null);
 ```
 
 <div class="grid grid-cols-2">
@@ -252,15 +255,19 @@ display(Plot.plot({
   y: {label: "$ per GPU hour", grid: true, zero: true},
   color: {...gpuColor, legend: true},
   marks: [
-    Plot.lineY(rentalHist.filter((d) => d.source === "list"), {x: "date", y: "usd", stroke: "gpu", curve: "step-after"}),
-    Plot.dot(rentalHist.filter((d) => d.source === "vast"), {x: "date", y: "usd", stroke: "gpu", fill: "var(--theme-background)", r: 5, strokeWidth: 2}),
-    Plot.lineY(powerHist, {x: "date", y: "power", stroke: "gpu", strokeDasharray: "4,3", strokeOpacity: 0.8}),
-    Plot.tip(rentalHist, Plot.pointerX({x: "date", y: "usd", title: (d) => `${d.gpu} · ${d.month}\n${sourceName[d.source]}: ${usd(d.usd)}`}))
+    Plot.lineY(listRows, {x: "date", y: "list", stroke: "gpu", curve: "step-after", strokeWidth: 2}),
+    Plot.ruleX(vastRows, {x: "date", y1: "vast_p25", y2: "vast_p75", stroke: "gpu", strokeWidth: 8, strokeOpacity: 0.2}),
+    Plot.lineY(vastRows, {x: "date", y: "vast", stroke: "gpu", z: "gpu", strokeDasharray: "1,3", strokeWidth: 2}),
+    Plot.dot(vastRows, {x: "date", y: "vast", stroke: "gpu", fill: "var(--theme-background)", r: 4, strokeWidth: 2}),
+    Plot.lineY(powerHist, {x: "date", y: "power", stroke: "gpu", strokeDasharray: "5,3", strokeOpacity: 0.7}),
+    Plot.tip([...listRows.map((d) => ({...d, y: d.list, t: `Lambda / RunPod list price: ${usd(d.list)}`})),
+              ...vastRows.map((d) => ({...d, y: d.vast, t: `Vast.ai median: ${usd(d.vast)} (middle half ${usd(d.vast_p25)}–${usd(d.vast_p75)}, ${d.vast_n} offers)`}))],
+      Plot.pointer({x: "date", y: "y", title: (d) => `${d.gpu} · ${d.month}\n${d.t}`}))
   ]
 }));
 ```
 
-<p class="small muted">Line: archived on-demand list prices (median of Lambda and RunPod). Circles: today's Vast.ai marketplace median. Dashed: electricity cost.</p>
+<p class="small muted">Solid line: Lambda / RunPod list price. Circles on a dotted line: Vast.ai marketplace median, with the shaded bar spanning the middle half of offers. Dashed: electricity cost.</p>
 
 </div>
 <div class="card">
@@ -272,38 +279,51 @@ display(Plot.plot({
   y: {type: "log", label: "$ per 1M output tokens (blended, log scale)", grid: true},
   color: {...modelColor, legend: true},
   marks: [
-    Plot.lineY(tokenHist.filter((d) => d.source === "archive"), {x: "date", y: "blended", stroke: "series", marker: "dot"}),
-    Plot.dot(tokenHist.filter((d) => d.source === "openrouter"), {x: "date", y: "blended", stroke: "series", fill: "var(--theme-background)", r: 5, strokeWidth: 2}),
-    Plot.tip(tokenHist, Plot.pointerX({x: "date", y: "blended", stroke: "series", title: (d) => `${d.model} · ${d.month}\n${usd(d.blended)} ${d.source === "archive" ? "(OpenRouter listed price, archived)" : "(median across providers, live)"}`}))
+    Plot.ruleX(listedRows.filter((d) => d.flagged), {x: "date", y1: "listed_lo", y2: "listed_hi", stroke: "series", strokeOpacity: 0.5}),
+    Plot.lineY(listedRows, {x: "date", y: "listed", stroke: "series", marker: "dot"}),
+    Plot.dot(listedRows.filter((d) => d.flagged), {x: "date", y: "listed", stroke: "series", r: 6, strokeWidth: 1.5}),
+    Plot.ruleX(liveRows, {x: "date", y1: "p25", y2: "p75", stroke: "series", strokeWidth: 8, strokeOpacity: 0.2}),
+    Plot.dot(liveRows, {x: "date", y: "median", stroke: "series", fill: "var(--theme-background)", r: 4, strokeWidth: 2, symbol: "square"}),
+    Plot.tip([...listedRows.map((d) => ({...d, y: d.listed, t: `Headline price: ${usd(d.listed)} (median of ${d.listed_n} snapshots)${d.flagged ? `\nMoved within the month: ${usd(d.listed_lo)}–${usd(d.listed_hi)}` : ""}`})),
+              ...liveRows.map((d) => ({...d, y: d.median, t: `Median across providers: ${usd(d.median)} (middle half ${usd(d.p25)}–${usd(d.p75)})`}))],
+      Plot.pointer({x: "date", y: "y", title: (d) => `${d.model ?? d.series} · ${d.month}\n${d.t}`}))
   ]
 }));
 ```
 
-<p class="small muted">Older versions count toward today's model (Llama 2 → 3 → 3.1 → 3.3 70B; DeepSeek V2.5 → V3). Circles: live median across providers.</p>
+<p class="small muted">Line: OpenRouter's headline price, the monthly median of its snapshots. Ringed months: the headline price moved more than 25% within the month (usually a change of default provider), with the vertical line showing the range. Squares: median across all providers, with the middle half shaded. Older versions count toward today's model (Llama 2 → 3 → 3.1 → 3.3 70B; DeepSeek V2.5 → V3).</p>
 
 </div>
 </div>
 
 ```js
-// One consistent measure for every month: archived list rent and OpenRouter's listed token price.
+// One definition for every month: provider list rent and OpenRouter's headline token price.
 // Throughput is today's benchmark, so each model starts when the version benchmarked went on sale.
-const firstSold = d3.rollup(tokenHist.filter((d) => d.model === d.series), (v) => d3.min(v, (d) => d.month), (d) => d.series);
-const listRent = new Map(rentalHist.filter((d) => d.gpu === gpu && d.source === "list").map((d) => [d.month, d.usd]));
-const spreadHist = tokenHist
-  .filter((d) => d.source === "archive" && firstSold.has(d.series) && d.month >= firstSold.get(d.series) && listRent.has(d.month))
+const firstSold = d3.rollup(listedRows.filter((d) => d.model === d.series), (v) => d3.min(v, (d) => d.month), (d) => d.series);
+const listRent = new Map(listRows.filter((d) => d.gpu === gpu).map((d) => [d.month, d.list]));
+const tpsFor = (model) => latest.find((r) => r.gpu === gpu && r.model === model)?.tok_s_per_gpu;
+const spreadHist = listedRows
+  .filter((d) => firstSold.has(d.series) && d.month >= firstSold.get(d.series) && listRent.has(d.month))
   .map((d) => {
-    const tps = latest.find((r) => r.gpu === gpu && r.model === d.series)?.tok_s_per_gpu;
-    const tokenRev = tps * data.assumptions.token_load_factor * 3600 / 1e6 * d.blended;
+    const tokenRev = tpsFor(d.series) * data.assumptions.token_load_factor * 3600 / 1e6 * d.listed;
     return {...d, rent: listRent.get(d.month), tokenRev, spread: tokenRev - listRent.get(d.month)};
   })
   .filter((d) => Number.isFinite(d.spread));
+const liveSpread = latest.filter((d) => d.gpu === gpu).map((d) => ({...d, date: toDate(data.latest_month)}));
 display(html`<h3>Token seller's spread by month, ${gpu}</h3>`);
 display(Plot.plot({
   width, height: 300, x: {type: "utc", label: null}, y: {label: "$ per GPU hour", grid: true},
   color: {domain: MODELS, range: MODEL_COLORS, legend: true},
-  marks: [Plot.ruleY([0]), Plot.lineY(spreadHist, {x: "date", y: "spread", stroke: "series", marker: "circle", tip: true,
-    title: (d) => `${d.series} · ${d.month}\nToken revenue ${usd(d.tokenRev)} − list rent ${usd(d.rent)} = ${usd(d.spread)}`})]
+  marks: [
+    Plot.ruleY([0]),
+    Plot.lineY(spreadHist, {x: "date", y: "spread", stroke: "series", marker: "dot"}),
+    Plot.dot(spreadHist.filter((d) => d.flagged), {x: "date", y: "spread", stroke: "series", r: 6, strokeWidth: 1.5}),
+    Plot.dot(liveSpread, {x: "date", y: "inference_spread", stroke: "model", fill: "var(--theme-background)", r: 5, strokeWidth: 2, symbol: "square"}),
+    Plot.tip([...spreadHist.map((d) => ({...d, y: d.spread, t: `${d.series} · ${d.month}\nHeadline token revenue ${usd(d.tokenRev)} − list rent ${usd(d.rent)} = ${usd(d.spread)}${d.flagged ? "\nHeadline price moved within the month" : ""}`})),
+              ...liveSpread.map((d) => ({...d, y: d.inference_spread, t: `${d.model} · today (live)\nMedian token revenue ${usd(d.token_rev)} − Vast.ai rent ${usd(d.rental)} = ${usd(d.inference_spread)}`}))],
+      Plot.pointer({x: "date", y: "y", title: "t"}))
+  ]
 }));
 ```
 
-<p class="small muted">Every month uses the same two archived prices: OpenRouter's listed token price and the Lambda / RunPod list rent. Both differ from the live medians at the top of the page, so the levels don't match exactly, but the trend is like-for-like. Throughput is today's benchmark, and each model starts when its current version went on sale.</p>
+<p class="small muted">Lines use one definition for every month: OpenRouter's headline token price minus the Lambda / RunPod list rent. Squares are today's live figures from the top of the page. They differ from the line because they use Vast.ai marketplace rent (below list rent) and the median price across providers (which can be above or below the headline price). Throughput is today's benchmark, and each model starts when its current version went on sale.</p>

@@ -39,10 +39,12 @@ def rental_obs():
         lp = lp[lp.pricing_type.fillna("on-demand").eq("on-demand")]
         frames.append(lp.assign(month=_period(lp["date"]), source="list")
                       [["month", "gpu", "price_usd_per_gpu_hr", "source"]])
-    wb = load_manual(C.PROC / "wayback_gpu_prices.csv")
-    if len(wb):
-        frames.append(wb.assign(month=_period(wb["date"]), source="list")
-                      [["month", "gpu", "price_usd_per_gpu_hr", "source"]])
+    # Provider list prices: archived (Wayback) and collected daily, same definition
+    for f in (C.PROC / "wayback_gpu_prices.csv", C.LIST_PRICE_HISTORY):
+        wb = load_manual(f)
+        if len(wb):
+            frames.append(wb.assign(month=_period(wb["date"]), source="list")
+                          [["month", "gpu", "price_usd_per_gpu_hr", "source"]])
     vast = load_manual(C.VAST_HISTORY)
     if len(vast):
         vast = vast.dropna(subset=["gpu"])
@@ -61,9 +63,11 @@ def token_obs():
     manual = load_manual(C.MANUAL / "token_prices_history.csv")
     if len(manual):
         frames.append(manual.assign(source=manual.get("source", "manual")))
-    wb = load_manual(C.PROC / "wayback_token_prices.csv")
-    if len(wb):
-        frames.append(wb[["date", "model", "usd_per_m_input", "usd_per_m_output", "source"]])
+    # OpenRouter headline price: archived (Wayback) and collected daily, same definition
+    for f in (C.PROC / "wayback_token_prices.csv", C.OPENROUTER_LISTED_HISTORY):
+        wb = load_manual(f)
+        if len(wb):
+            frames.append(wb[["date", "model", "usd_per_m_input", "usd_per_m_output", "source"]])
     orr = load_manual(C.OPENROUTER_HISTORY)
     if len(orr):
         frames.append(orr[["date", "model", "provider", "usd_per_m_input", "usd_per_m_output", "source"]])
@@ -168,20 +172,37 @@ def records(df):
     return [_clean(r) for r in df.to_dict(orient="records")]
 
 
+LISTED_SOURCES = ("openrouter (wayback)", "openrouter listed")
+FLAG_RATIO = 1.25   # a month is flagged when its highest headline price is >25% above its lowest
+
+
+def _q(p):
+    return lambda x: x.quantile(p)
+
+
 def _rental_history(ro):
-    # Monthly median by GPU and source: "list" = archived Lambda / RunPod prices, "vast" = marketplace
+    """Per month and GPU: provider list price (archived + daily) and the Vast.ai marketplace median and range."""
     if not len(ro):
         return pd.DataFrame()
-    h = ro.groupby(["month", "gpu", "source"])["price_usd_per_gpu_hr"].agg(["median", "size"]).reset_index()
-    return h.rename(columns={"median": "usd", "size": "prices"})
+    lst = (ro[ro.source.eq("list")].groupby(["month", "gpu"])["price_usd_per_gpu_hr"]
+           .agg(list="median", list_n="size"))
+    vast = (ro[ro.source.eq("vast")].groupby(["month", "gpu"])["price_usd_per_gpu_hr"]
+            .agg(vast="median", vast_p25=_q(0.25), vast_p75=_q(0.75), vast_n="size"))
+    return lst.join(vast, how="outer").reset_index()
 
 
 def _token_history(to):
+    """Per month and model: OpenRouter's headline price (median of every snapshot that month, flagged when it
+    moved a lot within the month) and, where collected, the live median and range across providers."""
     if not len(to):
         return pd.DataFrame()
-    t = to.assign(source=to.source.where(to.source.eq("openrouter"), "archive"))
-    h = t.groupby(["month", "series", "source"]).agg(blended=("blended", "median"), model=("model", "last")).reset_index()
-    return h
+    listed = (to[to.source.isin(LISTED_SOURCES)].sort_values("date").groupby(["month", "series"])
+              .agg(listed=("blended", "median"), listed_lo=("blended", "min"), listed_hi=("blended", "max"),
+                   listed_n=("blended", "size"), model=("model", "last")))
+    listed["flagged"] = listed.listed_hi > FLAG_RATIO * listed.listed_lo
+    live = (to[to.source.eq("openrouter")].groupby(["month", "series"])["blended"]
+            .agg(median="median", p25=_q(0.25), p75=_q(0.75), providers="size"))
+    return listed.join(live, how="outer").reset_index()
 
 
 def site_payload(panel, parts):
