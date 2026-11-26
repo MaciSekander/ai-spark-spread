@@ -1,0 +1,6 @@
+jupyterlab
+pandas>=2.1
+numpy
+matplotlib
+requests
+python-dotenv

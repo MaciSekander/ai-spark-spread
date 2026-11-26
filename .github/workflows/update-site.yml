@@ -1,0 +1,77 @@
+name: Update data and deploy site
+
+on:
+  schedule:
+    - cron: "17 6 * * *"     # daily, 06:17 UTC
+  workflow_dispatch:          # "Run workflow" button in the Actions tab
+  push:
+    branches: [main]
+    paths: ["site/**", "spark/**", "data/manual/**", "data/processed/inferencex_throughput.csv", ".github/workflows/**"]
+
+permissions:
+  contents: write    # commit the day's data
+  pages: write
+  id-token: write
+
+concurrency:
+  group: update-site
+  cancel-in-progress: false
+
+jobs:
+  update-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-pipeline.txt
+      - run: pip install -r requirements-pipeline.txt
+
+      - name: Collect today's prices
+        if: github.event_name != 'push'
+        env:
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          VAST_API_KEY: ${{ secrets.VAST_API_KEY }}
+        run: python -m spark.collect
+
+      - name: Build site data
+        run: python -m spark.build
+
+      - name: Commit new data
+        if: github.event_name != 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/raw/vast_snapshots.csv data/raw/openrouter_price_snapshots.csv \
+                  data/raw/eia_retail_prices.csv data/raw/eia_retail_prices.refreshed \
+                  data/processed/spark_spread_panel.csv
+          git diff --cached --quiet || git commit -m "Daily data update $(date -u +%F)"
+          git push
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+        working-directory: site
+      - run: npm run build
+        working-directory: site
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    needs: update-and-build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,9 @@
+date,gpu,model,precision,framework,input_len,output_len,concurrency,frontier_points,spec_decoding,output_tok_s_per_gpu,tok_s_per_user,source,source_url
+2026-11-05,B200,DeepSeek-R1,fp8,dynamo-trt,8192,1024,128-128,8,none,168.75702361766645,50,InferenceX (SemiAnalysis),https://github.com/SemiAnalysisAI/InferenceX/actions/runs/23438524239/attempts/5
+2026-11-05,H100,DeepSeek-R1,fp8,dynamo-trt,8192,1024,30-9,5,none,14.596502166185504,50,InferenceX (SemiAnalysis),https://github.com/SemiAnalysisAI/InferenceX/actions/runs/21790074782/attempts/2
+2025-10-29,B200,Llama-3.3-70B,fp8,vllm,8192,1024,32-32,9,none,484.61673769610957,50,InferenceX (SemiAnalysis),https://github.com/SemiAnalysisAI/InferenceX/actions/runs/18924487526/attempts/3
+2025-10-29,H100,Llama-3.3-70B,fp8,vllm,8192,1024,16-8,7,none,163.32902629777945,50,InferenceX (SemiAnalysis),https://github.com/SemiAnalysisAI/InferenceX/actions/runs/18924487526/attempts/3
+2026-08-22,B200,gpt-oss-120b,fp4,vllm,8192,1024,128-64,10,none,4854.995270742287,50,InferenceX (SemiAnalysis),https://github.com/SemiAnalysisAI/InferenceX/actions/runs/26696226421/attempts/1
+2026-08-22,H100,gpt-oss-120b,fp4,vllm,8192,1024,64-32,7,none,988.1130466299351,50,InferenceX (SemiAnalysis),https://github.com/SemiAnalysisAI/InferenceX/actions/runs/25956497716/attempts/2
+2026-11-05,B200,DeepSeek-V3,fp8,dynamo-trt,8192,1024,128-128,8,none,168.75702361766645,50,"InferenceX (SemiAnalysis), DeepSeek-R1 used as proxy",https://github.com/SemiAnalysisAI/InferenceX/actions/runs/23438524239/attempts/5
+2026-11-05,H100,DeepSeek-V3,fp8,dynamo-trt,8192,1024,30-9,5,none,14.596502166185504,50,"InferenceX (SemiAnalysis), DeepSeek-R1 used as proxy",https://github.com/SemiAnalysisAI/InferenceX/actions/runs/21790074782/attempts/2

@@ -1,0 +1,58 @@
+date,model,openrouter_id,provider,quantization,usd_per_m_input,usd_per_m_output,source
+2026-11-25,DeepSeek-V3,deepseek/deepseek-v3.2,SiliconFlow,fp8,0.2589999999999999,0.7999999999999999,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-v3.2,DeepInfra,fp4,0.26,0.38,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-v3.2,Baidu,fp8,0.28,0.42,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-v3.2,Featherless,fp8,0.8999999999999999,1.6,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-v3.2-exp,SiliconFlow,fp8,0.27,0.41,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-v3.1-terminus,SiliconFlow,fp8,0.27,1.0,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-chat-v3.1,DeepInfra,fp4,0.25,0.95,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-chat-v3.1,SiliconFlow,fp8,0.27,1.0,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-chat-v3.1,CoreWeave,fp8,0.5,1.5,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-chat-v3-0324,SiliconFlow,fp8,0.25,1.0,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-chat-v3-0324,Featherless,fp4,1.0,2.625,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-chat,DeepInfra,fp4,0.256,0.7120000000000001,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-chat,StreamLake,unknown,0.2574,1.0287,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-chat,DeepInfra,fp4,0.32,0.8899999999999999,openrouter
+2026-11-25,DeepSeek-R1,deepseek/deepseek-r1-0528,DeepInfra,fp4,0.5,2.1500000000000004,openrouter
+2026-11-25,DeepSeek-R1,deepseek/deepseek-r1-0528,SiliconFlow,fp8,0.5,2.1799999999999997,openrouter
+2026-11-25,DeepSeek-R1,deepseek/deepseek-r1-0528,StreamLake,unknown,0.5710000000000001,2.2859999999999996,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Near AI,fp4,0.03,0.15,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Venice,int4,0.03,0.15,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,CoreWeave,fp4,0.03,0.1699999999999999,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,AkashML,fp4,0.03,0.187,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,DeepInfra,bf16,0.037,0.1699999999999999,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Crusoe,bf16,0.0499999999999999,0.25,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,DigitalOcean,unknown,0.06,0.42,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Mancer 2,fp8,0.0849999999999999,0.375,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Google,unknown,0.09,0.36,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,BaseTen,fp4,0.0999999999999999,0.5,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Parasail,fp4,0.0999999999999999,0.75,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,SambaNova,unknown,0.14,0.95,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Fireworks,unknown,0.15,0.6,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Amazon Bedrock,unknown,0.15,0.6,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Nebius,fp4,0.15,0.6,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,SiliconFlow,fp8,0.15,0.6,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Together,unknown,0.15,0.6,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Groq,unknown,0.15,0.6,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Parasail,fp4,0.15,0.75,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,PrimeIntellect,fp4,0.35,0.75,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Cerebras,fp16,0.35,0.75,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b:batch,DeepInfra,bf16,0.0296,0.136,openrouter
+2026-11-25,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,DeepInfra,fp8,0.0999999999999999,0.32,openrouter
+2026-11-25,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,AkashML,fp8,0.1999999999999999,0.52,openrouter
+2026-11-25,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,Parasail,fp8,0.22,0.5,openrouter
+2026-11-25,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,Cloudflare,fp8,0.293,2.2529999999999997,openrouter
+2026-11-25,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,Groq,unknown,0.59,0.7899999999999999,openrouter
+2026-11-25,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,CoreWeave,fp16,0.71,0.71,openrouter
+2026-11-25,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,Amazon Bedrock,unknown,0.72,0.72,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-v3.2,SiliconFlow,fp8,0.25899999999999995,0.7999999999999999,openrouter
+2026-11-25,DeepSeek-V3,deepseek/deepseek-v3.2,Featherless,fp8,0.72,1.28,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,CoreWeave,fp4,0.03,0.16999999999999998,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,DeepInfra,bf16,0.037,0.16999999999999998,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Crusoe,bf16,0.049999999999999996,0.25,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Mancer 2,fp8,0.08499999999999999,0.375,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,BaseTen,fp4,0.09999999999999999,0.5,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,Parasail,fp4,0.09999999999999999,0.75,openrouter
+2026-11-25,gpt-oss-120b,openai/gpt-oss-120b,PrimeIntellect,fp4,0.34099999999999997,0.731,openrouter
+2026-11-25,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,DeepInfra,fp8,0.09999999999999999,0.32,openrouter
+2026-11-25,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,AkashML,fp8,0.19999999999999998,0.52,openrouter

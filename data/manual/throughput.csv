@@ -1,0 +1,1 @@
+date,gpu,model,precision,framework,input_len,output_len,concurrency,output_tok_s_per_gpu,tok_s_per_user,source,source_url
