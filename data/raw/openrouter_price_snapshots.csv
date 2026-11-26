@@ -102,3 +102,4 @@ date,model,openrouter_id,provider,quantization,usd_per_m_input,usd_per_m_output,
 2026-11-26,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,Groq,unknown,0.59,0.7899999999999999,openrouter
 2026-11-26,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,CoreWeave,fp16,0.71,0.71,openrouter
 2026-11-26,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,Amazon Bedrock,unknown,0.72,0.72,openrouter
+2026-11-26,gpt-oss-120b,openai/gpt-oss-120b,PrimeIntellect,fp4,0.35,0.75,openrouter

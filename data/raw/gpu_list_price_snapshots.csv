@@ -6,3 +6,10 @@ date,provider,gpu,variant,price_usd_per_gpu_hr,pricing_type,source_url
 2026-11-25,RunPod,H100,H100 NVL,3.19,on-demand,https://www.runpod.io/pricing
 2026-11-25,RunPod,H100,H100 PCIe,2.89,on-demand,https://www.runpod.io/pricing
 2026-11-25,RunPod,H100,H100 SXM,4.39,on-demand,https://www.runpod.io/pricing
+2026-11-26,Lambda,B200,B200,7.69,on-demand,https://lambda.ai/pricing
+2026-11-26,Lambda,H100,H100 SXM,4.69,on-demand,https://lambda.ai/pricing
+2026-11-26,Lambda,H100,H100 PCIe,3.79,on-demand,https://lambda.ai/pricing
+2026-11-26,RunPod,B200,B200,7.99,on-demand,https://www.runpod.io/pricing
+2026-11-26,RunPod,H100,H100 NVL,3.19,on-demand,https://www.runpod.io/pricing
+2026-11-26,RunPod,H100,H100 PCIe,2.89,on-demand,https://www.runpod.io/pricing
+2026-11-26,RunPod,H100,H100 SXM,4.39,on-demand,https://www.runpod.io/pricing
