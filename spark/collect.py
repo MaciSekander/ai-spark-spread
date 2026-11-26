@@ -56,6 +56,7 @@ def collect_openrouter():
 
 
 EIA_REFRESH_DAYS = 7   # EIA publishes monthly; no need to hit its slow API every day
+EIA_BUDGET_SECONDS = 8 * 60   # series not fetched in time keep their old rows and are retried next run
 
 
 EIA_STAMP = C.EIA_HISTORY.with_suffix(".refreshed")   # committed; file mtimes don't survive a git checkout
@@ -71,14 +72,18 @@ def collect_eia(force=False):
         raise RuntimeError("EIA_API_KEY is not set")
     url = "https://api.eia.gov/v2/electricity/retail-sales/data/"
     frames = []
+    deadline = time.monotonic() + EIA_BUDGET_SECONDS   # EIA's API can hang; don't let it stall the daily run
     for state in C.EIA_STATES:
         for sector in C.EIA_SECTORS:
+            if time.monotonic() > deadline:
+                print(f"    EIA {state} {sector} skipped: time budget used up")
+                continue
             params = [("api_key", C.EIA_API_KEY), ("frequency", "monthly"), ("data[0]", "price"),
                       ("facets[stateid][]", state), ("facets[sectorid][]", sector),
                       ("start", str(C.START)), ("sort[0][column]", "period"),
                       ("sort[0][direction]", "asc"), ("length", 5000)]
             try:
-                frames.append(pd.DataFrame(get_json(url, params=params, timeout=90)["response"]["data"]))
+                frames.append(pd.DataFrame(get_json(url, params=params, timeout=60, retries=2)["response"]["data"]))
             except Exception as e:   # noqa: BLE001
                 print(f"    EIA {state} {sector} failed: {e}")
             time.sleep(0.5)

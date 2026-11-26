@@ -33,6 +33,8 @@ jobs:
 
       - name: Collect today's prices
         if: github.event_name != 'push'
+        timeout-minutes: 15
+        continue-on-error: true   # a failed or slow source still lets the site rebuild from existing data
         env:
           EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
           VAST_API_KEY: ${{ secrets.VAST_API_KEY }}
@@ -46,10 +48,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/raw/vast_snapshots.csv data/raw/openrouter_price_snapshots.csv \
-                  data/raw/eia_retail_prices.csv data/raw/eia_retail_prices.refreshed \
-                  data/processed/spark_spread_panel.csv
-          git diff --cached --quiet || git commit -m "Daily data update $(date -u +%F)"
+          # .gitignore limits data/raw to the history files and the EIA stamp (which may not exist yet)
+          git add -A data/raw data/processed/spark_spread_panel.csv
+          git diff --cached --quiet && exit 0
+          git commit -m "Daily data update $(date -u +%F)"
+          git pull --rebase
           git push
 
       - uses: actions/setup-node@v4
