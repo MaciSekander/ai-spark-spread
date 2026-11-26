@@ -45,8 +45,8 @@ display(Inputs.table([
 ## Sources
 
 - **Electricity:** [U.S. EIA API v2](https://www.eia.gov/opendata/), electricity retail sales, monthly average price by state and sector. EIA publishes with a lag of about two months; the latest published month is carried forward.
-- **GPU rental:** [Vast.ai](https://vast.ai) marketplace, on-demand offers for H100 (SXM, NVL, PCIe) and B200, priced per GPU, collected daily. Hand-checked list prices from provider pricing pages (via the Wayback Machine) are added when available.
-- **Token prices:** [OpenRouter](https://openrouter.ai) per-provider input and output prices for each model, collected daily; the median across providers is used.
+- **GPU rental:** [Vast.ai](https://vast.ai) marketplace, on-demand offers for H100 (SXM, NVL, PCIe) and B200, priced per GPU, collected daily. Before daily collection began, monthly history comes from archived Lambda and RunPod pricing pages on the Wayback Machine (lowest listed on-demand price per GPU type). Months with live data use only the Vast.ai median.
+- **Token prices:** [OpenRouter](https://openrouter.ai) per-provider input and output prices for each model, collected daily; the median across providers is used. Earlier months use OpenRouter's single listed price from archived copies of its models API (Wayback Machine), counting older versions toward today's model (Llama 2 → 3 → 3.1 → 3.3 70B, DeepSeek V2.5 → V3).
 - **Throughput:** [SemiAnalysis InferenceX](https://github.com/SemiAnalysisAI/InferenceX) benchmark runs, the best output tokens per second per GPU at ${data.assumptions.target_interactivity} tok/s per user. DeepSeek-V3 uses DeepSeek-R1's runs (same architecture). Speculative decoding is excluded.
 
 ```js

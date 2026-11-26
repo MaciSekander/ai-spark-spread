@@ -39,6 +39,10 @@ def rental_obs():
         lp = lp[lp.pricing_type.fillna("on-demand").eq("on-demand")]
         frames.append(lp.assign(month=_period(lp["date"]), source="list")
                       [["month", "gpu", "price_usd_per_gpu_hr", "source"]])
+    wb = load_manual(C.PROC / "wayback_gpu_prices.csv")
+    if len(wb):
+        frames.append(wb.assign(month=_period(wb["date"]), source="list")
+                      [["month", "gpu", "price_usd_per_gpu_hr", "source"]])
     vast = load_manual(C.VAST_HISTORY)
     if len(vast):
         vast = vast.dropna(subset=["gpu"])
@@ -57,6 +61,9 @@ def token_obs():
     manual = load_manual(C.MANUAL / "token_prices_history.csv")
     if len(manual):
         frames.append(manual.assign(source=manual.get("source", "manual")))
+    wb = load_manual(C.PROC / "wayback_token_prices.csv")
+    if len(wb):
+        frames.append(wb[["date", "model", "usd_per_m_input", "usd_per_m_output", "source"]])
     orr = load_manual(C.OPENROUTER_HISTORY)
     if len(orr):
         frames.append(orr[["date", "model", "provider", "usd_per_m_input", "usd_per_m_output", "source"]])
@@ -105,15 +112,22 @@ def hw_cost_per_gpu_hr(gpu):
     return hw if C.INCLUDE_HARDWARE and np.isfinite(hw) else 0.0
 
 
+def _live_first(obs, key, value, live, months, cols):
+    """Monthly median; months with live daily data use only that, earlier months use the archived prices."""
+    def monthly(df):
+        return df.groupby(["month", key])[value].median().unstack(key).reindex(index=months, columns=cols)
+    is_live = obs["source"].eq(live)
+    out = monthly(obs[is_live]).combine_first(monthly(obs[~is_live]))
+    return out.interpolate(limit=3, limit_area="inside")
+
+
 def build_panel():
     months = C.months()
     pw, power_latest = power_cost(months)
     ro = rental_obs()
-    rental = (ro.groupby(["month", "gpu"])["price_usd_per_gpu_hr"].median().unstack("gpu")
-              .reindex(months).interpolate(limit=3, limit_area="inside").reindex(columns=C.GPUS))
+    rental = _live_first(ro, "gpu", "price_usd_per_gpu_hr", live="vast", months=months, cols=C.GPUS)
     to = token_obs()
-    token_price = (to.groupby(["month", "series"])["blended"].median().unstack("series")
-                   .reindex(months).interpolate(limit=3, limit_area="inside").reindex(columns=C.MODEL_NAMES))
+    token_price = _live_first(to, "series", "blended", live="openrouter", months=months, cols=C.MODEL_NAMES)
     tput = throughput()
 
     rows = []
@@ -152,6 +166,22 @@ def _clean(o):
 
 def records(df):
     return [_clean(r) for r in df.to_dict(orient="records")]
+
+
+def _rental_history(ro):
+    # Monthly median by GPU and source: "list" = archived Lambda / RunPod prices, "vast" = marketplace
+    if not len(ro):
+        return pd.DataFrame()
+    h = ro.groupby(["month", "gpu", "source"])["price_usd_per_gpu_hr"].agg(["median", "size"]).reset_index()
+    return h.rename(columns={"median": "usd", "size": "prices"})
+
+
+def _token_history(to):
+    if not len(to):
+        return pd.DataFrame()
+    t = to.assign(source=to.source.where(to.source.eq("openrouter"), "archive"))
+    h = t.groupby(["month", "series", "source"]).agg(blended=("blended", "median"), model=("model", "last")).reset_index()
+    return h
 
 
 def site_payload(panel, parts):
@@ -223,6 +253,8 @@ def site_payload(panel, parts):
         "panel": records(panel),
         "daily_rental": records(daily_rental),
         "daily_tokens": records(daily_tokens),
+        "rental_history": records(_rental_history(ro)),
+        "token_history": records(_token_history(to)),
     })
 
 

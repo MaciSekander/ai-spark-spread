@@ -41,6 +41,9 @@ python -m spark.build          # write site/src/data/spark.json
 cd site && npm install && npm run dev    # preview at http://127.0.0.1:3000
 ```
 
+Price history before daily collection comes from Wayback Machine snapshots: run `python -m spark.history` now and then
+and commit `data/processed/wayback_*.csv` (every row links to its snapshot; check new rows before committing).
+
 Throughput comes from InferenceX exports you download by hand into `data/raw/inferencex/` (not committed).
 After adding new exports, run `python -m spark.throughput` and commit `data/processed/inferencex_throughput.csv`.
 
