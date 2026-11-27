@@ -7,3 +7,7 @@ date,model,series,openrouter_id,usd_per_m_input,usd_per_m_output,source,source_u
 2026-11-26,DeepSeek-R1,DeepSeek-R1,deepseek/deepseek-r1-0528,0.5710000000000001,2.2859999999999996,openrouter listed,https://openrouter.ai/api/v1/models
 2026-11-26,gpt-oss-120b,gpt-oss-120b,openai/gpt-oss-120b,0.049999999999999996,0.25,openrouter listed,https://openrouter.ai/api/v1/models
 2026-11-26,Llama-3.3-70B,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,0.71,0.71,openrouter listed,https://openrouter.ai/api/v1/models
+2026-11-27,DeepSeek-V3,DeepSeek-V3,deepseek/deepseek-chat,0.2574,1.0287,openrouter listed,https://openrouter.ai/api/v1/models
+2026-11-27,DeepSeek-R1,DeepSeek-R1,deepseek/deepseek-r1-0528,0.5710000000000001,2.2859999999999996,openrouter listed,https://openrouter.ai/api/v1/models
+2026-11-27,gpt-oss-120b,gpt-oss-120b,openai/gpt-oss-120b,0.049999999999999996,0.25,openrouter listed,https://openrouter.ai/api/v1/models
+2026-11-27,Llama-3.3-70B,Llama-3.3-70B,meta-llama/llama-3.3-70b-instruct,0.59,0.7899999999999999,openrouter listed,https://openrouter.ai/api/v1/models
